@@ -8,7 +8,7 @@
 ## Setup:
 1. git clone https://github.com/nthnthcandrew/humioEventForwarding.git
 2. cd humioEventForwarding
-3. docker-compose up -d
+3. docker-compose up
 4. docker ps
 5. python3 configure.py
    
