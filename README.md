@@ -8,9 +8,10 @@
 ## Setup:
 1. git clone https://github.com/nthnthcandrew/humioEventForwarding.git
 2. cd humioEventForwarding
-3. docker-compose up
-4. docker ps
-5. python3 configure.py
+4. docker-compose up
+5. docker ps
+6. Update configure.py with your LICENSE FILE
+7. python3 configure.py
    
    This will setup the environment and run some tests. You can log into Humio and Spunk to validate the config and the Event Forwarding rule worked. The script will output the URLs and credentials to use.
 
