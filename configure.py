@@ -4,7 +4,7 @@ import os, json, re, time
 #LOAD HUMIO LICENSE
 print("LOADING HUMIO LICENSE")
 command = '\'TOKEN=`cat /data/humio-data/local-admin-token.txt`; \
-LICENSE_KEY=[INSERT LICENSE KEY]; \
+LICENSE_KEY=eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzUxMiJ9.eyJpc09lbSI6ZmFsc2UsImF1ZCI6Ikh1bWlvLWxpY2Vuc2UtY2hlY2siLCJzdWIiOiJhbmRyZXcubGF0aGFtQGNyb3dkc3RyaWtlLmNvbSIsInVpZCI6ImdYRk9jTVp5WUNDSldtaGIiLCJtYXhVc2VycyI6NSwiYWxsb3dTQUFTIjpmYWxzZSwibWF4Q29yZXMiOjEwMCwidmFsaWRVbnRpbCI6MTY2MzMxNTA1NiwiZXhwIjoxNzI2ODE5MDU2LCJpc1RyaWFsIjpmYWxzZSwiaWF0IjoxNjMyMjExMDU2LCJtYXhJbmdlc3RHYlBlckRheSI6MTB9.ASi8WxG6U9Uy7b2Q9EUnSTOa6z_ADQbpXyBkCEbjj98ALrfDSbCrbRd2SD169XvI9NvbeOI5tJQUXiwTLtzWFl3IADqOOvSdtfBp8n97Qys24piwxJzfZOxn3GC2Z2zafsBzgEP7mzrTGzUShMSM2VzkPnp-DnloB9b95xRVEDLg_I7r; \
 curl -s -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d "{ \\"query\\": \\"mutation { updateLicenseKey(license: \\\\\\\"$LICENSE_KEY\\\\\\\") { expiresAt } }\\" }" \
@@ -57,7 +57,7 @@ print("CREATING HUMIO PARSER")
 command = '\'TOKEN=`cat /data/humio-data/local-admin-token.txt`; \
 curl -s -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\\"query\\":\\"mutation{createParser(input:{name:\\\\\\\"eventForwarderParser\\\\\\\",testData:[],repositoryName:\\\\\\\"forwardedEventsRepo\\\\\\\",tagFields:[],sourceCode:\\\\\\\"parseJson() | findTimestamp(field=timestamp)\\\\\\\",force:false}) { parser{id,name}}}\\"}" \
+  -d "{\\"query\\":\\"mutation{createParser(input:{name:\\\\\\\"eventForwarderParser\\\\\\\",testData:[],repositoryName:\\\\\\\"forwardedEventsRepo\\\\\\\",tagFields:[],sourceCode:\\\\\\\"parseJson()\\\\\\\",force:false}) { parser{id,name}}}\\"}" \
  http://localhost:8080/graphql\''
 
 command = "docker exec humio bash -c " + command
@@ -101,7 +101,7 @@ print("CREATING HUMIO EVENT FORWARDER")
 command = '\'TOKEN=`cat /data/humio-data/local-admin-token.txt`; \
 curl -s -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\\"query\\": \\"mutation { createKafkaEventForwarder(input:{name:\\\\\\\"ForwardEventsToSplunk\\\\\\\",description:\\\\\\\"Description\\\\\\\",topic:\\\\\\\"ForwardedEventsTopic\\\\\\\",properties:\\\\\\\"bootstrap.servers=broker.eventforwarding_default:29092\\\\\\\"}){id}}\\" }" \
+  -d "{\\"query\\": \\"mutation { createKafkaEventForwarder(input:{name:\\\\\\\"ForwardEventsToSplunk\\\\\\\",description:\\\\\\\"Description\\\\\\\",topic:\\\\\\\"ForwardedEventsTopic\\\\\\\",properties:\\\\\\\"bootstrap.servers=broker:29092\\\\\\\"}){id}}\\" }" \
  http://localhost:8080/graphql\''
 
 command = "docker exec humio bash -c " + command
@@ -202,7 +202,7 @@ jsonPayload = {
     "type":"security",
     "message":"Info Security Message"
 }
-jsonPayload['timestamp'] = time.time()
+jsonPayload['@timestamp'] = round(time.time() *1000)
 payload = json.dumps(jsonPayload)
 command = 'curl -s --location --request POST \'http://localhost:8080/api/v1/ingest/raw\' --header \'Content-Type: application/json\' --header \'Authorization: Bearer '+ingestToken+'\'  -d \''+payload+'\''
 print("\nPOSTING: ", command)
@@ -219,7 +219,7 @@ jsonPayload = {
     "type":"infrastructure",
     "message":"Info Security Message"
 }
-jsonPayload['timestamp'] = time.time()
+jsonPayload['@timestamp'] = round(time.time() *1000)
 payload = json.dumps(jsonPayload)
 command = 'curl -s --location --request POST \'http://localhost:8080/api/v1/ingest/raw\' --header \'Content-Type: application/json\' --header \'Authorization: Bearer '+ingestToken+'\'  -d \''+payload+'\''
 print("\nPOSTING: ", command)
@@ -256,5 +256,3 @@ if len(results) == 1:
     print("- PASSED: TESTING SPLUNK RECEIVED 1 EVENTS")
 else:
     print("- FAILED: TESTING SPLUNK RECEIVED 1 EVENTS")
-
-
